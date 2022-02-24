@@ -1,141 +1,127 @@
 // ignore_for_file: must_be_immutable
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import './transaction.dart';
+import 'package:personal_expense_tracker/transaction_list.dart';
+import './new_transaction.dart';
+import '../models/transaction.dart';
+import './chart.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
-  List<Transaction> transactions = [
-    Transaction(
-      id: '1',
-      title: 'Shoes',
-      amount: 2.0,
-      transactionDate: DateTime.now(),
-    ),
-    Transaction(
-      id: '2',
-      title: 'Bag',
-      amount: 92.0,
-      transactionDate: DateTime.now(),
-    ),
-    Transaction(
-      id: '3',
-      title: 'Cellphone',
-      amount: 62.0,
-      transactionDate: DateTime.now(),
-    ),
-    Transaction(
-      id: '4',
-      title: 'Motor',
-      amount: 72.0,
-      transactionDate: DateTime.now(),
-    ),
-  ];
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Expense Tracker'),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Card(
-              color: Colors.red,
-              elevation: 5,
-              child: SizedBox(
-                width: double.infinity,
-                child: Text('chart'),
-              ),
-            ),
-            Card(
-              child: Container(
-                margin: const EdgeInsets.all(10.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const TextField(
-                      decoration: InputDecoration(labelText: 'User'),
-                    ),
-                    const TextField(
-                      decoration: InputDecoration(labelText: 'Password'),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text('Add transaction'),
-                      style: TextButton.styleFrom(
-                        primary: Colors.purple,
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Column(
-              children: transactions
-                  .map((transaction) => Card(
-                        elevation: 5,
-                        child: Row(children: [
-                          Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.pink,
-                                  width: 2,
-                                ),
-                                color: Colors.purple[400]),
-                            margin: const EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 15,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Text(
-                                '\$${transaction.amount}',
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                transaction.title,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                DateFormat.yMMMd()
-                                    .format(transaction.transactionDate),
-                                style: const TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  color: Colors.grey,
-                                ),
-                              )
-                            ],
-                          )
-                        ]),
-                      ))
-                  .toList(),
-            ),
-          ],
+        primarySwatch: Colors.purple,
+        accentColor: Colors.amber,
+        textTheme: ThemeData.light().textTheme.copyWith(
+            headline4: const TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 18,
+                fontWeight: FontWeight.bold)),
+        fontFamily: 'QuickSand',
+        appBarTheme: AppBarTheme(
+          titleTextStyle: ThemeData.light()
+              .textTheme
+              .copyWith(
+                headline6: const TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
+              )
+              .headline6,
         ),
       ),
+      home: const HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final List<Transaction> _userTransactions = [
+    
+  ];
+
+  void _addNewTransaction(String title, double amount) {
+    final newTx = Transaction(
+      id: DateTime.now().toString(),
+      title: title,
+      amount: amount,
+      transactionDate: DateTime.now(),
+    );
+    setState(() {
+      _userTransactions.add(newTx);
+    });
+  }
+
+  void showAddTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      builder: (_) {
+        return GestureDetector(
+          child: NewTransaction(_addNewTransaction),
+          onTap: () {},
+          behavior: HitTestBehavior.opaque,
+        );
+      },
+    );
+  }
+
+  List<Transaction> get recentTransaction {
+    return _userTransactions.where((tx) {
+      return tx.transactionDate.isAfter(
+        DateTime.now().subtract(
+          const Duration(days: 7),
+        ),
+      );
+    }).toList();
+  }
+
+ 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Expense Tracker'),
+        actions: [
+          Builder(builder: (ctx) {
+            return IconButton(
+              onPressed: () => showAddTransaction(ctx),
+              icon: const Icon(Icons.add),
+            );
+          }),
+        ],
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Chart(recentTransaction),
+          TransactionList(_userTransactions),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Builder(builder: (ctx) {
+        return FloatingActionButton(
+          onPressed: () => showAddTransaction(ctx),
+          child: const Icon(Icons.add),
+          backgroundColor: Theme.of(context).colorScheme.secondary,
+        );
+      }),
     );
   }
 }
