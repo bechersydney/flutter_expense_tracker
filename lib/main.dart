@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.amber,
         textTheme: ThemeData.light().textTheme.copyWith(
             headline4: const TextStyle(
-                fontFamily: 'OpenSans',
+                fontFamily: 'QuickSand',
                 fontSize: 18,
                 fontWeight: FontWeight.bold)),
         fontFamily: 'QuickSand',
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
               .textTheme
               .copyWith(
                 headline6: const TextStyle(
-                    fontFamily: 'OpenSans',
+                    fontFamily: 'QuickSand',
                     fontSize: 20,
                     fontWeight: FontWeight.bold),
               )
@@ -52,16 +52,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<Transaction> _userTransactions = [
-    
-  ];
+  final List<Transaction> _userTransactions = [];
 
-  void _addNewTransaction(String title, double amount) {
+  void _addNewTransaction(String title, double amount, DateTime date) {
     final newTx = Transaction(
       id: DateTime.now().toString(),
       title: title,
       amount: amount,
-      transactionDate: DateTime.now(),
+      transactionDate: date,
     );
     setState(() {
       _userTransactions.add(newTx);
@@ -91,7 +89,12 @@ class _HomePageState extends State<HomePage> {
     }).toList();
   }
 
- 
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((tx)=> tx.id == id );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,7 +114,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Chart(recentTransaction),
-          TransactionList(_userTransactions),
+          TransactionList(_userTransactions, _deleteTransaction),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
