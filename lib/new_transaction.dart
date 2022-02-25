@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+import 'adaptive_button.dart';
 
 class NewTransaction extends StatefulWidget {
   final Function _addTransaction;
@@ -43,45 +46,49 @@ class _NewTransactionState extends State<NewTransaction> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        margin: const EdgeInsets.all(10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            TextField(
-              decoration: const InputDecoration(labelText: 'Title'),
-              controller: _titleController,
-            ),
-            TextField(
-              decoration: const InputDecoration(labelText: 'Amount'),
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+    final mediaquery = MediaQuery.of(context);
+    return SingleChildScrollView(
+      child: Card(
+        child: Container(
+          margin: EdgeInsets.only(
+              top: 10,
+              right: 10,
+              left: 10,
+              bottom: mediaquery.viewInsets.bottom + 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Title'),
+                controller: _titleController,
               ),
-              onSubmitted: (_) => _submitData(),
-            ),
-            Container(
-              height: 70,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(_pickedDate == null
-                        ? 'No date chosen!'
-                        : DateFormat.yMMMd().format(_pickedDate)),
-                  ),
-                  IconButton(
-                    onPressed: _openDatePicker,
-                    icon: const Icon(Icons.calendar_month_outlined),
-                  )
-                ],
+              TextField(
+                decoration: const InputDecoration(labelText: 'Amount'),
+                controller: _amountController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                onSubmitted: (_) => _submitData(),
               ),
-            ),
-            ElevatedButton(
-              onPressed: _submitData,
-              child: const Text('Add transaction'),
-            )
-          ],
+              SizedBox(
+                height: 70,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(_pickedDate == null
+                          ? 'No date chosen!'
+                          : DateFormat.yMMMd().format(_pickedDate)),
+                    ),
+                    IconButton(
+                      onPressed: _openDatePicker,
+                      icon: const Icon(Icons.calendar_month_outlined),
+                    )
+                  ],
+                ),
+              ),
+              AdaptiveButton(_submitData, 'Add transaction')
+            ],
+          ),
         ),
       ),
     );
